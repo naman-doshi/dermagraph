@@ -11,8 +11,8 @@ function logFile(event) {
   let str = event.target.result;
   let img = document.createElement("img");
   img.src = str;
+  app.innerHTML = "";
   app.append(img);
-  console.log(str);
 }
 
 /**

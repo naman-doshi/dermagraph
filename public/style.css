@@ -37,7 +37,7 @@ img {
 
 .main-container {
   width: 64rem;
-  margin: 8rem auto;
+  margin: 4rem auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -90,5 +90,12 @@ h1 {
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  gap: 1.6rem;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 1.6rem;
 }
