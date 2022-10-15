@@ -1,21 +1,28 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <title>Dermagraph Upload Prototype</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
-    <!-- prettier-ignore -->
-    <py-script>
-      print("Let's compute π:")
-      def compute_pi(n):
-          pi = 2
-          for i in range(1,n):
-              pi *= 4 * i ** 2 / (4 * i ** 2 - 1)
-          return pi
 
-      pi = compute_pi(100000)
-      s = f"π is approximately {pi:.3f}"
-      print(s)
-    </py-script>
+  <body>
+    <div class="main-container">
+      <h1>Dermagraph Upload Prototype</h1>
+
+      <div id="app"></div>
+
+      <form id="upload">
+        <input type="file" id="file" accept="image/*" />
+        <button class="btn btn--full">Upload</button>
+      </form>
+    </div>
+
+    <script src="script.js"></script>
   </body>
 </html>
