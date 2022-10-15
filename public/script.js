@@ -19,6 +19,7 @@ function logFile(event) {
  * Handle submit events
  * @param  {Event} event The event object
  */
+
 function handleSubmit(event) {
   // Stop the form from reloading the page
   event.preventDefault();
