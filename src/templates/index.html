@@ -14,15 +14,17 @@
   <body>
     <div class="main-container">
       <h1>Dermagraph Upload Prototype</h1>
-      <h1 id="demo">p</h1>
 
       <div id="app"></div>
 
-      <form id="upload" onsubmit="return false">
+      <form id="upload">
         <input type="file" id="file" accept="image/*" />
         <div class="buttons">
           <button class="btn btn--full">Upload</button>
           <!-- <button class="btn btn--full">Next</button> -->
+        </div>
+        <div id="change">
+          <img src="/static/loading.gif" />
         </div>
       </form>
     </div>

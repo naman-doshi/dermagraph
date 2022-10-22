@@ -14,7 +14,9 @@ import urllib.request
 import base64
 from io import BytesIO
 import json
-from flask import after_this_request
+from flask import after_this_request, make_response
+import matplotlib.pyplot as plt
+from torchvision.utils import save_image
 
 
 device = torch.device('mps')
@@ -33,33 +35,37 @@ class MelanomaDataset(Dataset):
         return self.df.shape[0]
     
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+def render(text):
+    return render_template('index.html', result=text)
 
-embed = None
-@app.route('/input', methods=['POST', 'GET'])
+@app.route('/', methods = ['GET'])
+def index(): 
+    return render_template(("index.html"))
+
+@app.route('/predict/input', methods=['POST', 'GET'])
 def predict():
-    file = request.form
-    params = file['params']
-    params = json.loads(params)
-    photo = str(file['photo'])
-    photo = urllib.request.urlopen(photo).read()
-    photo = base64.b64encode(photo)
-    embed = get_prediction(params, photo)
-    return embed
-
-@app.route('/output', methods=['GET'])
-def put():
-    if embed:
-        return jsonify(embed)
-    else:
-        return 1
+    if request.method == 'POST':
+        file = request.form
+        params = file['params']
+        params = json.loads(params)
+        photo = str(file['photo'])
+        photo = urllib.request.urlopen(photo).read()
+        photo = base64.b64encode(photo)
+        embed = get_prediction(params, photo)
+        return str(embed['prob'])
 
 def transform_image(img_bytes):
   p = 0.5
   imagenet_stats = {'mean':[0.485, 0.456, 0.406], 'std':[0.229, 0.224, 0.225]}
+  image = Image.open(BytesIO(base64.b64decode(img_bytes)))
+  width, height, = image.size
+  if width < height:
+    sm = width
+  else:
+    sm = height
   transforms = A.Compose([
+        A.CenterCrop(height=sm, width=sm),
+        A.Resize(height=256, width=256),
         A.Cutout(p=p),
         A.RandomRotate90(p=p),
         A.Flip(p=p),
@@ -85,7 +91,7 @@ def transform_image(img_bytes):
         ToTensor(normalize=imagenet_stats)
         ])
 
-  image = Image.open(BytesIO(base64.b64decode(img_bytes)))
+  
   return transforms(**{"image": np.array(image)})["image"]
 
 def get_prediction(params, img_bytes):
@@ -100,7 +106,7 @@ def get_prediction(params, img_bytes):
   test_ds = MelanomaDataset(df=test_df, img=tensor)
   test_dl = DataLoader(dataset=test_ds, batch_size=1, shuffle=False, num_workers=4)
 
-  tta = 1
+  tta = 10
   preds = np.zeros(len(test_ds))
   for tta_id in range(tta):
       test_preds = []
@@ -111,7 +117,6 @@ def get_prediction(params, img_bytes):
               out = torch.sigmoid(out)
               test_preds.extend(out.cpu().detach().numpy())
           preds += np.array(test_preds).reshape(-1)
-      print(f'TTA {tta_id+1}')
   preds /= tta
   preds = {"prob": preds.tolist()[0]}
   return preds
