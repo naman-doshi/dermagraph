@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Dermagraph Upload Prototype</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="static/styles/style.css" />
+  </head>
+
+  <body>
+    <div class="main-container">
+      <h1>Dermagraph Upload Prototype</h1>
+      <h1 id="demo">p</h1>
+
+      <div id="app"></div>
+
+      <form id="upload" onsubmit="return false">
+        <input type="file" id="file" accept="image/*" />
+        <div class="buttons">
+          <button class="btn btn--full">Upload</button>
+          <!-- <button class="btn btn--full">Next</button> -->
+        </div>
+      </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+    <script src="static/script.js"></script>
+  </body>
+</html>
