@@ -52,7 +52,9 @@ def predict():
         photo = urllib.request.urlopen(photo).read()
         photo = base64.b64encode(photo)
         embed = get_prediction(params, photo)
-        return str(embed['prob'])
+        prob = round(float(embed['prob'])*100, 2)
+        prob = str(prob) + '%'
+        return prob
 
 def transform_image(img_bytes):
   p = 0.5

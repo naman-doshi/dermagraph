@@ -12,23 +12,95 @@
   </head>
 
   <body>
+    <header class="header">
+      <div class="logo-section">
+        <img class="logo" alt="logo" src="static/logo.png" />
+        <h2 class="logo-text">DermaGraph</h2>
+      </div>
+    </header>
     <div class="main-container">
-      <h1>Dermagraph Upload Prototype</h1>
-
-      <div id="app"></div>
-
-      <form id="upload">
-        <input type="file" id="file" accept="image/*" />
-        <div class="buttons">
-          <button class="btn btn--full">Upload</button>
-          <!-- <button class="btn btn--full">Next</button> -->
+      <div class="first-page">
+        <h1 class="first-heading">👋 Welcome to DermaGraph!</h1>
+        <p class="first-body">
+          Have an unidentified blemish on your skin that you're worried could be
+          dangerous? Have limited access a dermatologist? Or maybe you're a
+          doctor looking for a second opinion for their patient? Let DermaGraph
+          be the solution to all these worries.
+        </p>
+        <p class="first-body">
+          <span class="bold">2 in 3 Australians </span>develop some form of
+          malignant skin cancer over their lifetime, and worldwide this figure
+          is 1 in 50. While the mortality rate for skin cancer is relatively
+          low, its side effects significantly hinder your quality of life. By
+          providing accessible, on-demand diagnosis for skin lesions, DermaGraph
+          will make sure that you or your patient will not be a part of these
+          statistics.
+        </p>
+        <p class="first-body">
+          How do we do this? DermaGraph utilises an industry-standard
+          convolutional neural network (CNN) that uses a picture of your lesion,
+          along with your demographics, to determine the likelihood of it being
+          malignant with <span class="bold">91% accuracy.</span> Meanwhile,
+          dermatologists only have an 86.6% accuracy with the naked eye. Thus,
+          DermaGraph has several benefits:
+        </p>
+        <ul class="list">
+          <li class="point-1">
+            <ion-icon name="time" class="mission-icon"></ion-icon>
+            <span class="mission-item">
+              Studies show that when detected early, the 5-year survival rate
+              for melanoma is 99%.
+            </span>
+          </li>
+          <li class="point-2">
+            <ion-icon name="happy" class="mission-icon"></ion-icon>
+            <span class="mission-item">
+              DermaGraph operates solely through photographs, meaning you will
+              not have to undergo an invasive biopsy.
+            </span>
+          </li>
+          <li class="point-3">
+            <ion-icon name="wallet" class="mission-icon"></ion-icon>
+            <span class="mission-item">
+              In most cases, the chance of malignancy is so low that you do not
+              need to visit a dermatologist. While it is always better to do so,
+              we acknowledge that there are many who have limited access to
+              dermatologists.
+            </span>
+          </li>
+        </ul>
+        <div class="button">
+          <button class="btn btn--full">Get Started!</button>
         </div>
+      </div>
+      <div class="final-page">
+        <h1>Dermagraph Upload Prototype</h1>
+        <div id="app"></div>
+        <form id="upload">
+          <input type="file" id="file" accept="image/*" />
+          <div class="buttons">
+            <button class="btn btn--full">Upload</button>
+            <!-- <button class="btn btn--full">Next</button> -->
+          </div>
+        </form>
         <div id="change">
-          <img src="/static/loading.gif" />
+          <div id="loading" class="hidden" hidden>
+            <img class="loading" src="/static/loading.gif" />
+            <p id="text">Analysis in progress, please wait!</p>
+          </div>
+          <p id="prediction" hidden></p>
         </div>
-      </form>
+      </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <script src="static/script.js"></script>
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
+    ></script>
   </body>
 </html>

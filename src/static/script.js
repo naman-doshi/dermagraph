@@ -2,9 +2,12 @@
 let form = document.querySelector("#upload");
 let file = document.querySelector("#file");
 let app = document.querySelector("#app");
-let pred = document.querySelector("#pred");
+let pred = document.querySelector("#prediction");
+let load = document.querySelector("#loading");
 
 function logFile(event) {
+  load.classList.remove("hidden");
+  load.classList.add("shown");
   let str = event.target.result;
   let img = document.createElement("img");
   img.src = str;
@@ -26,8 +29,11 @@ function logFile(event) {
 
   req.onreadystatechange = function () {
     if (req.readyState == XMLHttpRequest.DONE) {
+      load.classList.remove("shown");
+      load.classList.add("hidden");
       resp = req.responseText;
       pred.innerHTML = resp;
+      document.getElementById("prediction").hidden = false;
     }
   };
   req.open("POST", "/predict/input");
