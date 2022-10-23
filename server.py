@@ -3,12 +3,10 @@ import pandas as pd
 from torch.utils.data import Dataset,DataLoader
 import torch
 import numpy as np
-from flask import Flask, jsonify
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensor
 from PIL import Image
-from flask import Flask, jsonify, request
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, request, render_template
 import urllib.request
 import base64
 from io import BytesIO
@@ -16,24 +14,24 @@ import json
 
 def getDiagnosis(pred, status):
     if pred <= 5:
-        diagnosis = "Benign 🎉🎉"
+        diagnosis = "Safe 🎉🎉"
         if status=='patient':
             recs = "The chance of this lesion being malignant is extremely low, and if you do not have the means to do so, visiting a dermatologist is not needed. Still, if you are experiencing any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked immediately."
         else:
             recs = 'The chance of this lesion being malignant is extremely low. A biopsy is likely not needed, but please exercise your own judgement.'
     elif pred <= 20:
-        diagnosis = "Probably Benign 🎉"
+        diagnosis = "Probably Safe 🎉"
         if status=='patient':
             recs = "The chance of this lesion being malignant is low, but higher than normal — meaning you must pay close attention to this lesion in the future. If you do not have the means to do so, visiting a dermatologist is not needed. Still, if you are experiencing any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked immediately."
         else:
             recs = "The chance of this lesion being malignant is low, but higher than normal. A biopsy is likely not needed, but please exercise your own judgement. Please ask the patient to pay close attention to this lesion and to immediately inform you if they experience any other symptoms."
-    elif pred <= 50:
+    elif pred <= 40:
         diagnosis = "Probably Early-Stage Malignant 🚨"
         if status=='patient':
             recs = "The chance of this lesion being malignant is high, but our model indicates that the lesion is likely in the early stages of cancer. Please visit your dermatologist immediately. If you experience any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
         else:
             recs = "The chance of this lesion being malignant is high, but our model indicates that the lesion is likely in the early stages of cancer. Please conduct a biopsy and ask the patient to immediately inform you if they experience any other symptoms."
-    elif pred <= 70:
+    elif pred <= 60:
         diagnosis = "Probably Malignant 🚨🚨"
         if status=='patient':
             recs = "The chance of this lesion being malignant is high, but our model indicates that the lesion might be in the middle stages of cancer — it is not too late to get it treated. Please visit your dermatologist immediately. If you experience any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
@@ -45,7 +43,7 @@ def getDiagnosis(pred, status):
             recs = "This lesion is almost certainly malignant. Please visit your dermatologist immediately. If you experience any more symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
         else:
             recs = "It is almost certain that this lesion is malignant. Please conduct a biopsy, operate on it as soon as possible, and ask the patient to immediately inform you if they experience any other symptoms."
-    
+
     return pred, diagnosis, recs
 
 
@@ -57,19 +55,19 @@ class MelanomaDataset(Dataset):
     def __init__(self, df, img):
         self.df = df
         self.img = img
-        
+
     def __getitem__(self, indx):
         return self.img
-    
+
     def __len__(self):
         return self.df.shape[0]
-    
+
 
 def render(text):
     return render_template('index.html', result=text)
 
 @app.route('/', methods = ['GET'])
-def index(): 
+def index():
     return render_template(("index.html"))
 
 @app.route('/predict/input', methods=['POST', 'GET'])
@@ -126,11 +124,11 @@ def transform_image(img_bytes):
         A.OneOf([
             A.OpticalDistortion(p=0.3),
             A.GridDistortion(p=0.1)
-        ], p=p), 
+        ], p=p),
         ToTensor(normalize=imagenet_stats)
         ])
 
-  
+
   return transforms(**{"image": np.array(image)})["image"]
 
 def get_prediction(params, img_bytes):
@@ -145,7 +143,7 @@ def get_prediction(params, img_bytes):
   test_ds = MelanomaDataset(df=test_df, img=tensor)
   test_dl = DataLoader(dataset=test_ds, batch_size=1, shuffle=False, num_workers=4)
 
-  tta = 6
+  tta = 20
   preds = np.zeros(len(test_ds))
   for tta_id in range(tta):
       test_preds = []

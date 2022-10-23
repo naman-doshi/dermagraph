@@ -13,7 +13,7 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensor
 
 # mps for Apple Silicon, gpu for a Nvidia GPU, or cpu otherwise.
-device = torch.device("mps")
+device = torch.device("cpu")
 
 def list_files(path:Path):
     return [o for o in path.iterdir()]
