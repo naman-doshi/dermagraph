@@ -18,8 +18,42 @@ from flask import after_this_request, make_response
 import matplotlib.pyplot as plt
 from torchvision.utils import save_image
 
+def getDiagnosis(pred, status):
+    if pred <= 5:
+        diagnosis = "Benign 🎉🎉"
+        if status=='patient':
+            recs = "The chance of this lesion being malignant is extremely low, and if you do not have the means to do so, visiting a dermatologist is not needed. Still, if you are experiencing any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked immediately."
+        else:
+            recs = 'The chance of this lesion being malignant is extremely low. A biopsy is likely not needed, but please exercise your own judgement.'
+    elif pred <= 20:
+        diagnosis = "Probably Benign 🎉"
+        if status=='patient':
+            recs = "The chance of this lesion being malignant is low, but higher than normal — meaning you must pay close attention to this lesion in the future. If you do not have the means to do so, visiting a dermatologist is not needed. Still, if you are experiencing any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked immediately."
+        else:
+            recs = "The chance of this lesion being malignant is low, but higher than normal. A biopsy is likely not needed, but please exercise your own judgement. Please ask the patient to pay close attention to this lesion and to immediately inform you if they experience any other symptoms."
+    elif pred <= 50:
+        diagnosis = "Probably Early-Stage Malignant 🚨"
+        if status=='patient':
+            recs = "The chance of this lesion being malignant is high, but our model indicates that the lesion is likely in the early stages of cancer. Please visit your dermatologist immediately. If you experience any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
+        else:
+            recs = "The chance of this lesion being malignant is high, but our model indicates that the lesion is likely in the early stages of cancer. Please conduct a biopsy and ask the patient to immediately inform you if they experience any other symptoms."
+    elif pred <= 70:
+        diagnosis = "Probably Malignant 🚨🚨"
+        if status=='patient':
+            recs = "The chance of this lesion being malignant is high, but our model indicates that the lesion might be in the middle stages of cancer — it is not too late to get it treated. Please visit your dermatologist immediately. If you experience any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
+        else:
+            recs = "It is likely that this lesion is malignant. Please conduct a biopsy and ask the patient to immediately inform you if they experience any other symptoms."
+    else:
+        diagnosis = "Malignant 🚨🚨🚨"
+        if status=='patient':
+            recs = "This lesion is almost certainly malignant. Please visit your dermatologist immediately. If you experience any more symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
+        else:
+            recs = "It is almost certain that this lesion is malignant. Please conduct a biopsy, operate on it as soon as possible, and ask the patient to immediately inform you if they experience any other symptoms."
+    
+    return pred, diagnosis, recs
 
-device = torch.device('mps')
+
+device = torch.device('cpu')
 app = Flask(__name__)
 solved = False
 
@@ -48,13 +82,20 @@ def predict():
         file = request.form
         params = file['params']
         params = json.loads(params)
+        status = params['status']
+        del params['status']
+        params['age_approx'] = [float(params['age_approx'][0])]
         photo = str(file['photo'])
         photo = urllib.request.urlopen(photo).read()
         photo = base64.b64encode(photo)
+        image = Image.open(BytesIO(base64.b64decode(photo)))
+        width, height, = image.size
+        params['width'] = [width]
+        params['height'] = [height]
         embed = get_prediction(params, photo)
         prob = round(float(embed['prob'])*100, 2)
-        prob = str(prob) + '%'
-        return prob
+        prob, diagnosis, recs = getDiagnosis(prob, status)
+        return jsonify({'prob':prob, 'diag':diagnosis, 'recs':recs})
 
 def transform_image(img_bytes):
   p = 0.5
@@ -108,7 +149,7 @@ def get_prediction(params, img_bytes):
   test_ds = MelanomaDataset(df=test_df, img=tensor)
   test_dl = DataLoader(dataset=test_ds, batch_size=1, shuffle=False, num_workers=4)
 
-  tta = 10
+  tta = 6
   preds = np.zeros(len(test_ds))
   for tta_id in range(tta):
       test_preds = []

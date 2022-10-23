@@ -18,8 +18,8 @@
         <h2 class="logo-text">DermaGraph</h2>
       </div>
     </header>
-    <div class="main-container">
-      <div class="first-page">
+    <div id="main-container">
+      <div id="first-page">
         <h1 class="first-heading">👋 Welcome to DermaGraph!</h1>
         <p class="first-body">
           Have an unidentified blemish on your skin that you're worried could be
@@ -70,25 +70,86 @@
           </li>
         </ul>
         <div class="button">
-          <button class="btn btn--full">Get Started!</button>
+          <button id="next" class="btn btn--full">Get Started!</button>
         </div>
       </div>
-      <div class="final-page">
-        <h1>Dermagraph Upload Prototype</h1>
-        <div id="app"></div>
-        <form id="upload">
-          <input type="file" id="file" accept="image/*" />
-          <div class="buttons">
-            <button class="btn btn--full">Upload</button>
-            <!-- <button class="btn btn--full">Next</button> -->
+      <div id="third-page" hidden>
+        <h1 id="greeting" class="first-heading"></h1>
+        <form id="cta" class="cta-form" name="sign-up">
+          <div>
+            <label for="gender">Biological Sex</label>
+            <select id="gender" name="gender" required>
+              <option value="">Please choose one option:</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
           </div>
+
+          <div>
+            <label for="age">Age</label>
+            <input id="age" type="age" name="age" required />
+          </div>
+
+          <div>
+            <label for="select-where"
+              >Which area of the body is the lesion on?</label
+            >
+            <select id="select_where" name="select_where" required>
+              <option value="">Please choose one option:</option>
+              <option value="torso">Torso</option>
+              <option value="lower extremity">
+                Lower Extremities (Hip to Toes)
+              </option>
+              <option value="upper extremity">Arms</option>
+              <option value="head/neck">Head/Neck</option>
+              <option value="palms/soles">Palms/Soles</option>
+            </select>
+          </div>
+
+          <button id="form-btn" class="btn btn--form">Continue</button>
         </form>
-        <div id="change">
-          <div id="loading" class="hidden" hidden>
-            <img class="loading" src="/static/loading.gif" />
-            <p id="text">Analysis in progress, please wait!</p>
+      </div>
+      <div id="second-page" hidden>
+        <h1 class="first-heading">Are you a doctor or a patient?</h1>
+        <div id="doctor" class="option">
+          <span>🩺 </span><span>Doctor</span>
+        </div>
+        <div id="patient" class="option">
+          <span>🏥</span><span>Patient</span>
+        </div>
+      </div>
+      <div id="final-page" class="hidden">
+        <div id="first">
+          <h1>📸 Upload your photo here!</h1>
+          <p class="first-body">
+            But first, please keep some things in mind. Bring your phone as
+            close as possible to your lesion without it losing focus. Then, zoom
+            in as much as possible so the majority of your image is comprised of
+            the lesion. Try to minimise the numbers of hairs or markings shown
+            in the image, but it's fine if you can't do so.
+          </p>
+          <form id="upload">
+            <input type="file" id="file" accept="image/*" />
+            <div class="buttons">
+              <button class="btn btn--full">Upload</button>
+              <!-- <button class="btn btn--full">Next</button> -->
+            </div>
+          </form>
+        </div>
+        <div id="second">
+          <h1>Image Preview</h1>
+          <div id="app"></div>
+          <div id="change">
+            <div id="loading" class="hidden">
+              <img class="loading" src="/static/loading.gif" />
+              <p id="text">Analysis in progress, please wait...</p>
+            </div>
+            <div id="result">
+              <h1 id="prediction" hidden></h1>
+              <h2 id="diagnosis" hidden></h2>
+              <p id="recs" class="first-body" hidden></p>
+            </div>
           </div>
-          <p id="prediction" hidden></p>
         </div>
       </div>
     </div>
@@ -102,5 +163,6 @@
       nomodule
       src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/countup@1.8.2/countUp.js"></script>
   </body>
 </html>

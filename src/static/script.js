@@ -1,9 +1,13 @@
 // Get the form and file field
 let form = document.querySelector("#upload");
+let cta = document.querySelector("#cta");
 let file = document.querySelector("#file");
 let app = document.querySelector("#app");
-let pred = document.querySelector("#prediction");
 let load = document.querySelector("#loading");
+let get_started = document.querySelector("#next");
+let dr = document.querySelector("#doctor");
+let pt = document.querySelector("#patient");
+let greet = document.querySelector("#greeting");
 
 function logFile(event) {
   load.classList.remove("hidden");
@@ -16,11 +20,14 @@ function logFile(event) {
   let req = new XMLHttpRequest();
   let formData = new FormData();
   let params = {
+    status: localStorage.getItem("status"),
     image_name: ["ISIC_0251455"],
     patient_id: ["IP_3579794"],
-    sex: ["male"],
-    age_approx: [50.0],
-    anatom_site_general_challenge: ["torso"],
+    sex: [localStorage.getItem("sex")],
+    age_approx: [localStorage.getItem("age_approx")],
+    anatom_site_general_challenge: localStorage.getItem(
+      "anatom_site_general_challenge"
+    ),
     width: [6000],
     height: [4000],
   };
@@ -31,9 +38,8 @@ function logFile(event) {
     if (req.readyState == XMLHttpRequest.DONE) {
       load.classList.remove("shown");
       load.classList.add("hidden");
-      resp = req.responseText;
-      pred.innerHTML = resp;
-      document.getElementById("prediction").hidden = false;
+      resp = JSON.parse(req.responseText);
+      renderResult(resp.prob, resp.diag, resp.recs);
     }
   };
   req.open("POST", "/predict/input");
@@ -56,5 +62,68 @@ function handleSubmit(event) {
   console.log("read");
 }
 
+function renderFirst() {
+  let f = document.querySelector("#first-page");
+  f.hidden = true;
+  let s = document.querySelector("#second-page");
+  s.hidden = false;
+}
+
+function doctor() {
+  let f = document.querySelector("#second-page");
+  f.hidden = true;
+  let s = document.querySelector("#third-page");
+  s.hidden = false;
+  greet.innerHTML = "Tell us more about your patient!";
+  localStorage.setItem("status", "doctor");
+}
+
+function patient() {
+  let f = document.querySelector("#second-page");
+  f.hidden = true;
+  let s = document.querySelector("#third-page");
+  s.hidden = false;
+  greet.innerHTML = "Tell us more about yourself!";
+  localStorage.setItem("status", "patient");
+}
+
+function logData(event) {
+  event.preventDefault();
+  localStorage.setItem("sex", gender.value);
+  localStorage.setItem("age_approx", age.value);
+  localStorage.setItem("anatom_site_general_challenge", select_where.value);
+  let f = document.querySelector("#third-page");
+  f.hidden = true;
+  let elem = document.getElementById("main-container");
+  elem.style.width = "120rem";
+  let ele = document.getElementById("final-page");
+  ele.classList.remove("hidden");
+}
+
+function renderResult(prob, diagnosis, recs) {
+  let diag = document.getElementById("diagnosis");
+  let rec = document.getElementById("recs");
+  let pred = document.getElementById("prediction");
+  var options = {
+    useEasing: true,
+    useGrouping: true,
+    separator: ",",
+    decimal: ".",
+    prefix: "",
+    suffix: "%",
+  };
+  var demo = new CountUp("prediction", 0, prob, 2, 3, options);
+  pred.hidden = false;
+  demo.start();
+  diag.innerHTML = diagnosis;
+  diag.hidden = false;
+  rec.innerHTML = recs;
+  rec.hidden = false;
+}
+
 // Listen for submit events
+get_started.addEventListener("click", renderFirst);
+dr.addEventListener("click", doctor);
+pt.addEventListener("click", patient);
+cta.addEventListener("submit", logData);
 form.addEventListener("submit", handleSubmit);
