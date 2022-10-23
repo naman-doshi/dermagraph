@@ -2,22 +2,15 @@ from pathlib import Path
 import pandas as pd
 from torch.utils.data import Dataset,DataLoader
 from PIL import Image
-from torchvision import transforms as T
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from sklearn.model_selection import GroupKFold
 import numpy as np
 from fastprogress.fastprogress import master_bar, progress_bar
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import roc_auc_score
 from efficientnet_pytorch import EfficientNet
-from torchvision import models
-import pdb
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensor
-import matplotlib.pyplot as plt
-import pickle
-import imgaug
 
 # mps for Apple Silicon, gpu for a Nvidia GPU, or cpu otherwise.
 device = torch.device("mps")
