@@ -46,7 +46,7 @@ def getDiagnosis(pred, status):
 
     return pred, diagnosis, recs
 
-
+# mps for Apple Silicon, gpu for a Nvidia GPU, or cpu otherwise.
 device = torch.device('cpu')
 app = Flask(__name__)
 solved = False
