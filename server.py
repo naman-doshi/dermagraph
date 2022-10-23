@@ -1,4 +1,4 @@
-from train import get_model, path
+from train import get_model
 import pandas as pd
 from torch.utils.data import Dataset,DataLoader
 import torch
@@ -6,17 +6,13 @@ import numpy as np
 from flask import Flask, jsonify
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensor
-import torchvision.transforms as transforms
 from PIL import Image
 from flask import Flask, jsonify, request
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 import urllib.request
 import base64
 from io import BytesIO
 import json
-from flask import after_this_request, make_response
-import matplotlib.pyplot as plt
-from torchvision.utils import save_image
 
 def getDiagnosis(pred, status):
     if pred <= 5:
@@ -140,7 +136,7 @@ def transform_image(img_bytes):
 def get_prediction(params, img_bytes):
   tensor = transform_image(img_bytes)
   model, opt = get_model(model_name='efficientnet-b0', lr=1e-4, wd=1e-4)
-  model.load_state_dict(torch.load(f'src/effb0.pth', map_location=device))
+  model.load_state_dict(torch.load(f'effb0.pth', map_location=device))
   model.eval()
 
   df = pd.DataFrame(columns=['image_name', 'patient_id', 'sex', 'age_approx', 'anatom_site_general_challenge', 'width', 'height'])
