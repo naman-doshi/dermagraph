@@ -1,3 +1,4 @@
+# By Team DermaGraph, 2022
 from train import get_model
 import pandas as pd
 from torch.utils.data import Dataset,DataLoader
@@ -12,45 +13,46 @@ import base64
 from io import BytesIO
 import json
 
+# Function to make a custom diagnosis & recommendations based on the chance of melanoma.
 def getDiagnosis(pred, status):
-    if pred <= 5:
+    if pred <= 3:
         diagnosis = "Safe 🎉🎉"
         if status=='patient':
-            recs = "The chance of this lesion being malignant is extremely low, and if you do not have the means to do so, visiting a dermatologist is not needed. Still, if you are experiencing any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked immediately."
+            recs = f"DermaGraph believes that this lesion is safe. The chance of this lesion being final-stage malignant is {pred}% — which is extremely low. If you do not have the means to do so, visiting a dermatologist is not needed. Of course, please exercise your own judgement, and we encourage you to visit your dermatologist if you feel the need to. Still, if you are experiencing any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked immediately."
         else:
-            recs = 'The chance of this lesion being malignant is extremely low. A biopsy is likely not needed, but please exercise your own judgement.'
-    elif pred <= 20:
+            recs = f'DermaGraph believes that this lesion is safe. The chance of this lesion being final-stage malignant is {pred}% — which is extremely low. A biopsy is likely not needed, but please exercise your own judgement.'
+    elif pred <= 15:
         diagnosis = "Probably Safe 🎉"
         if status=='patient':
-            recs = "The chance of this lesion being malignant is low, but higher than normal — meaning you must pay close attention to this lesion in the future. If you do not have the means to do so, visiting a dermatologist is not needed. Still, if you are experiencing any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked immediately."
+            recs = f"DermaGraph believes that this lesion is probably safe. The chance of this lesion being final-stage malignant is low ({pred}%), but higher than normal — meaning you must pay close attention to this lesion in the future. If you do not have the means to do so, visiting a dermatologist is not needed. Still, if you are experiencing any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked immediately."
         else:
-            recs = "The chance of this lesion being malignant is low, but higher than normal. A biopsy is likely not needed, but please exercise your own judgement. Please ask the patient to pay close attention to this lesion and to immediately inform you if they experience any other symptoms."
-    elif pred <= 40:
+            recs = f"DermaGraph believes that this lesion is probably safe. The chance of this lesion being final-stage malignant is low ({pred}%), but higher than normal. A biopsy is likely not needed, but please exercise your own judgement. Please ask the patient to pay close attention to this lesion and to immediately inform you if they experience any other symptoms."
+    elif pred <= 35:
         diagnosis = "Probably Early-Stage Malignant 🚨"
         if status=='patient':
-            recs = "The chance of this lesion being malignant is high, but our model indicates that the lesion is likely in the early stages of cancer. Please visit your dermatologist immediately. If you experience any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
+            recs = f"DermaGraph believes that this lesion is early-stage malignant, with a {pred}% chance of final-stage malignancy. Please visit your dermatologist immediately. If you experience any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
         else:
-            recs = "The chance of this lesion being malignant is high, but our model indicates that the lesion is likely in the early stages of cancer. Please conduct a biopsy and ask the patient to immediately inform you if they experience any other symptoms."
-    elif pred <= 60:
+            recs = f"DermaGraph believes that this lesion is early-stage malignant, with a {pred}% chance of final-stage malignancy. Please conduct a biopsy and ask the patient to immediately inform you if they experience any other symptoms."
+    elif pred <= 50:
         diagnosis = "Probably Malignant 🚨🚨"
         if status=='patient':
-            recs = "The chance of this lesion being malignant is high, but our model indicates that the lesion might be in the middle stages of cancer — it is not too late to get it treated. Please visit your dermatologist immediately. If you experience any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
+            recs = f"DermaGraph believes that this lesion might be in the middle stages of cancer, with a {pred}% chance of final-stage malignancy — it is not too late to get it treated. Please visit your dermatologist immediately. If you experience any symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
         else:
-            recs = "It is likely that this lesion is malignant. Please conduct a biopsy and ask the patient to immediately inform you if they experience any other symptoms."
+            recs = f"DermaGraph believes that this lesion might be in the middle stages of cancer, with a {pred}% chance of final-stage malignancy. Please conduct a biopsy and ask the patient to immediately inform you if they experience any other symptoms."
     else:
         diagnosis = "Malignant 🚨🚨🚨"
         if status=='patient':
-            recs = "This lesion is almost certainly malignant. Please visit your dermatologist immediately. If you experience any more symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
+            recs = f"This lesion is almost certainly severely malignant. Please visit your dermatologist immediately. If you experience any more symptoms — including the lesion becoming raised or irregular, or changes to your lymph nodes and weight — please get it checked again."
         else:
-            recs = "It is almost certain that this lesion is malignant. Please conduct a biopsy, operate on it as soon as possible, and ask the patient to immediately inform you if they experience any other symptoms."
+            recs = f"It is almost certain that this lesion is severely malignant. Please conduct a biopsy, operate on it as soon as possible, and ask the patient to immediately inform you if they experience any other symptoms."
 
     return pred, diagnosis, recs
 
-# mps for Apple Silicon, gpu for a Nvidia GPU, or cpu otherwise.
+
 device = torch.device('cpu')
 app = Flask(__name__)
-solved = False
 
+# Initialisation of simplified MelanomaDataset class that is optimised for testing usage.
 class MelanomaDataset(Dataset):
     def __init__(self, df, img):
         self.df = df
@@ -62,17 +64,16 @@ class MelanomaDataset(Dataset):
     def __len__(self):
         return self.df.shape[0]
 
-
-def render(text):
-    return render_template('index.html', result=text)
-
+# Flask route to render index.html at all times when a user is viewing it (via a GET request).
 @app.route('/', methods = ['GET'])
 def index():
     return render_template(("index.html"))
 
+# Flask route to a special endpoint that is designated only for internal communications
 @app.route('/predict/input', methods=['POST', 'GET'])
 def predict():
     if request.method == 'POST':
+        # Processing the data from the frontend
         file = request.form
         params = file['params']
         params = json.loads(params)
@@ -86,6 +87,7 @@ def predict():
         width, height, = image.size
         params['width'] = [width]
         params['height'] = [height]
+        # Getting the probability of melanoma
         embed = get_prediction(params, photo)
         prob = round(float(embed['prob'])*100, 2)
         prob, diagnosis, recs = getDiagnosis(prob, status)
@@ -100,6 +102,8 @@ def transform_image(img_bytes):
     sm = width
   else:
     sm = height
+
+  # The transformations for the image augmentation — an unconventionally large amount in order to account for all types of pictures.
   transforms = A.Compose([
         A.CenterCrop(height=sm, width=sm),
         A.Resize(height=256, width=256),
@@ -131,18 +135,23 @@ def transform_image(img_bytes):
 
   return transforms(**{"image": np.array(image)})["image"]
 
+
+# Function to get the prediction based on parameters and image.
 def get_prediction(params, img_bytes):
+  # Initialising input and model
   tensor = transform_image(img_bytes)
   model, opt = get_model(model_name='efficientnet-b0', lr=1e-4, wd=1e-4)
   model.load_state_dict(torch.load(f'effb0.pth', map_location=device))
   model.eval()
-
+  
+  # Preliminarily processing data.
   df = pd.DataFrame(columns=['image_name', 'patient_id', 'sex', 'age_approx', 'anatom_site_general_challenge', 'width', 'height'])
   entry = pd.DataFrame.from_dict(params)
   test_df = pd.concat([df, entry], ignore_index=True)
   test_ds = MelanomaDataset(df=test_df, img=tensor)
   test_dl = DataLoader(dataset=test_ds, batch_size=1, shuffle=False, num_workers=4)
 
+  # TTA iterations.
   tta = 20
   preds = np.zeros(len(test_ds))
   for tta_id in range(tta):
