@@ -32,7 +32,7 @@ class MelanomaDataset(Dataset):
     def __getitem__(self, indx):
         img_path = f"{self.img_path_one}/{self.df.iloc[indx]['image_name']}.jpg"
         img = Image.open(img_path)
-
+ 
         if self.transforms:
             img = self.transforms(**{"image": np.array(img)})["image"]
             
